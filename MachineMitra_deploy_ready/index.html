@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- SEO Optimization -->
+    <title>MachineMitra | Track Machines, Track Money</title>
+    <meta name="description" content="MachineMitra is a simple mobile-first tracker for JCB, excavator, tipper and construction equipment owners. Log work hours, track client payments, and monitor monthly profit in seconds." />
+    <meta name="keywords" content="JCB tracker, excavator log, tipper hours, construction cashflow, machine owner app, track machines, track money, MachineMitra" />
+    <meta name="author" content="MachineMitra" />
+    
+    <!-- Theme color for mobile browser bars -->
+    <meta name="theme-color" content="#0B132B" />
+    
+    <!-- Style Sheet -->
+    <link rel="stylesheet" href="/src/style.css" />
+    
+    <!-- Icon Font (Remix Icon) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" />
+  </head>
+  <body>
+    <!-- ---------------------------------------------------- -->
+    <!-- SPLASH SCREEN OVERLAY                                -->
+    <!-- ---------------------------------------------------- -->
+    <div class="splash-screen" id="splashScreen">
+      <div class="splash-logo">
+        <i class="ri-truck-line"></i>
+        <span>MachineMitra</span>
+      </div>
+      <p class="splash-tagline">Track machines. Track money.</p>
+      <div class="splash-loader-bar">
+        <div class="splash-loader-progress"></div>
+      </div>
+    </div>
+
+    <!-- Main SaaS Container (Responsive layout wrapper) -->
+    <div class="app-container">
+      
+      <!-- Top header bar for Tablet/Desktop width (Hidden on mobile) -->
+      <header class="desktop-header">
+        <div class="header-inner">
+          <div class="brand">
+            <i class="ri-truck-line"></i>
+            <span>MachineMitra</span>
+          </div>
+          <span class="desktop-tagline">Track machines. Track money.</span>
+          <nav class="desktop-nav">
+            <!-- Filled dynamically with sync active state -->
+            <button class="desktop-nav-item active" data-target="screenHome">Home</button>
+            <button class="desktop-nav-item" data-target="screenWork">Work</button>
+            <button class="desktop-nav-item" data-target="screenPayments">Payments</button>
+            <button class="desktop-nav-item" data-target="screenMachines">Machines</button>
+            <button class="desktop-nav-item" data-target="screenProfile">Profile</button>
+          </nav>
+        </div>
+      </header>
+
+      <div class="device-shell">
+        
+        <!-- Fake status bar to make it feel premium on mobile mock -->
+        <div class="status-bar">
+          <span id="statusBarTime">09:41</span>
+          <div class="right-icons">
+            <i class="ri-wifi-line"></i>
+            <i class="ri-signal-tower-line"></i>
+            <i class="ri-battery-2-charge-line"></i>
+          </div>
+        </div>
+        
+        <!-- App Notification Banner / Toast -->
+        <div class="toast-banner" id="toastBanner">
+          <i class="ri-info-card-line" id="toastIcon"></i>
+          <span id="toastMessage">Welcome back!</span>
+        </div>
+        
+        <!-- Loading Overlay for API/Network activities -->
+        <div class="loading-overlay" id="loadingOverlay">
+          <div class="spinner"></div>
+        </div>
+        
+        <!-- Recaptcha Container for Firebase Phone Authentication (hidden/invisible) -->
+        <div id="recaptcha-container" style="display: none;"></div>
+        
+        <!-- ---------------------------------------------------- -->
+        <!-- AUTHENTICATION CONTAINER (Stops usage until logged in) -->
+        <!-- ---------------------------------------------------- -->
+        <div class="auth-container" id="authScreen" style="display: none;">
+          <div class="auth-header">
+            <div class="auth-logo">
+              <i class="ri-truck-line"></i>
+              <span>MachineMitra</span>
+            </div>
+            <p class="auth-tagline">Track machines. Track money.</p>
+          </div>
+          
+          <div class="auth-body">
+            <!-- Step 1: Request Phone Number -->
+            <div id="authPhoneStep" style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+              <div style="text-align: center; margin-bottom: 10px;">
+                <h2 style="font-size: 18px; font-weight: 700;">Login with Phone Number</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Enter your mobile number to access your account</p>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <div class="phone-input-group">
+                  <span class="country-code">+91</span>
+                  <input type="tel" id="loginPhoneNumber" class="phone-number-field" placeholder="Enter 10-digit number" pattern="[0-9]{10}" maxlength="10" required />
+                </div>
+              </div>
+              
+              <button class="btn btn-primary" id="btnRequestOtp" style="margin-top: 10px;">
+                Get OTP SMS <i class="ri-arrow-right-line"></i>
+              </button>
+            </div>
+            
+            <!-- Step 2: Validate OTP Code -->
+            <div id="authOtpStep" class="otp-container" style="display: none; width: 100%;">
+              <button id="btnBackToPhone" style="background:none; border:none; color:var(--text-muted); align-self: flex-start; display: flex; align-items:center; gap: 4px; font-weight: 600; font-size: 13px; cursor:pointer;">
+                <i class="ri-arrow-left-line"></i> Back
+              </button>
+              
+              <div>
+                <h2 class="otp-title">Verify OTP</h2>
+                <p class="otp-desc">We sent a verification code to <span id="displaySentNumber">+91 98765 43210</span></p>
+              </div>
+              
+              <div class="otp-inputs">
+                <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" />
+                <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" />
+                <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" />
+                <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" />
+                <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" />
+                <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" />
+              </div>
+              
+              <button class="btn btn-primary" id="btnVerifyOtp" style="margin-top: 10px;">
+                Verify & Login <i class="ri-checkbox-circle-line"></i>
+              </button>
+              
+              <div class="otp-resend">
+                Didn't receive code? <br/>
+                <span id="otpCountdownText">Resend in <span id="otpTimerSeconds">30</span>s</span>
+                <button class="otp-resend-btn" id="btnResendOtp" style="display: none;">Resend OTP</button>
+              </div>
+            </div>
+            
+            <!-- Step 3: Onboarding Name & Business -->
+            <div id="authOnboardingStep" style="display: none; flex-direction: column; gap: 20px; width: 100%;">
+              <div style="text-align: center; margin-bottom: 10px;">
+                <h2 style="font-size: 18px; font-weight: 700;">Complete Your Profile</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Welcome to MachineMitra! Tell us your name.</p>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="onboardingName" class="form-input" placeholder="e.g. Ramesh Patel" required />
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Business Name (Optional)</label>
+                <input type="text" id="onboardingBusiness" class="form-input" placeholder="e.g. Patel Earthmovers" />
+              </div>
+              
+              <button class="btn btn-primary" id="btnSubmitOnboarding" style="margin-top: 10px;">
+                Let's Start <i class="ri-arrow-right-line"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- ---------------------------------------------------- -->
+        <!-- MAIN APP CONTENT (Scrollable wrapper for tabs) -->
+        <!-- ---------------------------------------------------- -->
+        <div class="app-content">
+          
+          <!-- SCREEN 1: HOME (DASHBOARD) -->
+          <section class="screen active" id="screenHome">
+            <div class="dashboard-header">
+              <div>
+                <span class="today-date" id="headerDate">Saturday, Jun 20</span>
+                <h2 class="user-greeting" id="headerGreeting">Hello!</h2>
+              </div>
+              <div style="font-size: 20px; color: var(--primary);"><i class="ri-shield-user-line"></i></div>
+            </div>
+            
+            <!-- Monthly Profit Main Card -->
+            <div class="profit-card">
+              <span class="profit-label">Monthly Profit</span>
+              <div class="profit-value" id="dashMonthlyProfit">₹0</div>
+              
+              <div class="profit-breakdown">
+                <div class="breakdown-item">
+                  <span class="breakdown-label">Payments In</span>
+                  <div class="breakdown-val income" id="dashTotalPayments">₹0</div>
+                </div>
+                <div class="breakdown-item">
+                  <span class="breakdown-label">Expenses Out</span>
+                  <div class="breakdown-val expense" id="dashTotalExpenses">₹0</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Horizontal Scroll of Quick Metrics -->
+            <div class="metrics-scroll">
+              <div class="metric-box">
+                <span class="metric-box-label">Today's Hours</span>
+                <span class="metric-box-value" id="dashTodayHours">0h</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-box-label">Today's Earnings</span>
+                <span class="metric-box-value" id="dashTodayEarnings" style="color: var(--success);">₹0</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-box-label">Pending Payments</span>
+                <span class="metric-box-value pending" id="dashPendingPayments">₹0</span>
+              </div>
+            </div>
+            
+            <!-- Quick Action Buttons -->
+            <span class="actions-section-title">Quick Actions</span>
+            <div class="quick-actions-grid">
+              <div class="quick-action-card" id="btnActionAddWork">
+                <div class="action-icon"><i class="ri-add-line"></i></div>
+                <span class="action-text">Add Work</span>
+                <span class="action-desc">Log machine hours</span>
+              </div>
+              <div class="quick-action-card" id="btnActionReceivePayment">
+                <div class="action-icon"><i class="ri-wallet-3-line"></i></div>
+                <span class="action-text">Receive Payment</span>
+                <span class="action-desc">Record client cash</span>
+              </div>
+              <div class="quick-action-card" id="btnActionAddExpense">
+                <div class="action-icon"><i class="ri-gas-station-line"></i></div>
+                <span class="action-text">Add Expense</span>
+                <span class="action-desc">Fuel, repairs, parts</span>
+              </div>
+              <div class="quick-action-card" id="btnActionAddMachine">
+                <div class="action-icon"><i class="ri-truck-line"></i></div>
+                <span class="action-text">Add Machine</span>
+                <span class="action-desc">Add excavator/tipper</span>
+              </div>
+            </div>
+            
+            <!-- Recent Work Entries list preview -->
+            <div class="list-section-header">
+              <h3>Recent Work Entries</h3>
+              <button class="see-all" id="btnHomeSeeAllWork">See All</button>
+            </div>
+            <div class="records-list" id="homeRecentWorkList">
+              <!-- Dynamically populated or empty state -->
+              <div class="empty-state">
+                <i class="ri-file-list-3-line"></i>
+                <p>No work logged today. Click "Add Work" to begin.</p>
+              </div>
+            </div>
+          </section>
+          
+          <!-- SCREEN 2: WORK (LIST OF WORK LOGS) -->
+          <section class="screen" id="screenWork">
+            <div class="list-section-header" style="margin-bottom: 16px;">
+              <div>
+                <h1>Work Logs</h1>
+                <p class="subtitle">Complete history of all machine operations</p>
+              </div>
+            </div>
+            
+            <div class="records-list" id="workLogsList" style="flex: 1; overflow-y: auto;">
+              <!-- Dynamically populated or empty state -->
+              <div class="empty-state">
+                <i class="ri-history-line"></i>
+                <p>No work entries logged yet.</p>
+              </div>
+            </div>
+            
+            <!-- FAB to add work -->
+            <button class="fab" id="fabAddWork"><i class="ri-add-line"></i></button>
+          </section>
+          
+          <!-- SCREEN 3: PAYMENTS (CASHFLOWS) -->
+          <section class="screen" id="screenPayments">
+            <div class="list-section-header" style="margin-bottom: 16px;">
+              <div>
+                <h1>Payments</h1>
+                <p class="subtitle">Track customer payments & dues</p>
+              </div>
+            </div>
+            
+            <!-- Segmented Filter Control -->
+            <div class="segment-control">
+              <button class="segment-btn active" data-filter="all">All</button>
+              <button class="segment-btn" data-filter="pending">Pending</button>
+              <button class="segment-btn" data-filter="paid">Paid</button>
+            </div>
+            
+            <div class="records-list" id="paymentsList" style="flex: 1; overflow-y: auto;">
+              <!-- Dynamically populated or empty state -->
+              <div class="empty-state">
+                <i class="ri-hand-coin-line"></i>
+                <p>No payments recorded yet.</p>
+              </div>
+            </div>
+            
+            <button class="fab" id="fabAddPayment" style="background-color: var(--success); box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);"><i class="ri-hand-coin-line"></i></button>
+          </section>
+          
+          <!-- SCREEN 4: MY MACHINES -->
+          <section class="screen" id="screenMachines">
+            <div class="list-section-header" style="margin-bottom: 16px;">
+              <div>
+                <h1>My Machines</h1>
+                <p class="subtitle">Manage JCBs, tippers & equipment</p>
+              </div>
+            </div>
+            
+            <div class="records-list" id="machinesList" style="flex: 1; overflow-y: auto;">
+              <!-- Dynamically populated or empty state -->
+              <div class="empty-state">
+                <i class="ri-car-line"></i>
+                <p>No machines added yet. Add a machine to start logging work.</p>
+              </div>
+            </div>
+            
+            <button class="fab" id="fabAddMachine" style="background-color: var(--secondary); box-shadow: 0 4px 16px rgba(11, 19, 43, 0.4);"><i class="ri-add-line"></i></button>
+          </section>
+          
+          <!-- SCREEN 5: PROFILE & SETTINGS -->
+          <section class="screen" id="screenProfile">
+            <h1>Profile</h1>
+            <p class="subtitle">Manage account & settings</p>
+            
+            <div class="settings-section">
+              <div class="profile-avatar-container">
+                <div class="profile-avatar" id="profileInitials"><i class="ri-user-line"></i></div>
+                <div class="profile-phone" id="profileDisplayName">Owner Name</div>
+                <div style="font-size: 13px; color: var(--text-muted); font-weight: 600; margin-top:-4px;" id="profileBusinessName">Business Name</div>
+                <div class="profile-phone" id="profilePhoneNumber" style="font-size: 14px; color: var(--text-muted); font-weight: 500; margin-top: 4px;">+91 9876543210</div>
+                <div class="profile-status" style="margin-top: 6px;">Active Account</div>
+              </div>
+              
+              <button class="btn btn-outline" id="btnLogOut" style="padding: 10px 16px; font-size: 14px;">
+                <i class="ri-logout-box-line"></i> Log Out
+              </button>
+            </div>
+            
+            <!-- Firebase Settings Configuration (Collapsible for privacy) -->
+            <div class="settings-section">
+              <div class="collapsible-header" id="btnToggleFirebaseSettings">
+                <h3><i class="ri-fire-line" style="color: #FF5A00; margin-right: 6px;"></i> Firebase Config</h3>
+                <i class="ri-arrow-down-s-line" id="firebaseConfigArrow" style="transition: var(--transition-fast);"></i>
+              </div>
+              
+              <div class="collapsible-content" id="firebaseSettingsContent">
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Paste your Firebase configuration below to link your real Firebase Project SMS Auth. If empty, the app runs in realistic simulation mode.</p>
+                
+                <div class="form-group">
+                  <label class="form-label">API Key</label>
+                  <input type="text" id="fbApiKey" class="form-input" placeholder="AIzaSyA..." />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Auth Domain</label>
+                  <input type="text" id="fbAuthDomain" class="form-input" placeholder="project-id.firebaseapp.com" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Project ID</label>
+                  <input type="text" id="fbProjectId" class="form-input" placeholder="project-id" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">App ID</label>
+                  <input type="text" id="fbAppId" class="form-input" placeholder="1:123456:web:abcd..." />
+                </div>
+                
+                <button class="btn btn-primary btn-sm" id="btnSaveFirebaseConfig">
+                  Save Config <i class="ri-save-line"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Reset app data -->
+            <div class="settings-section" style="border-color: var(--danger-light);">
+              <h3 style="color: var(--danger);">Danger Zone</h3>
+              <p style="font-size: 12px; color: var(--text-muted);">Permanently delete all work entries, machines, cashflow histories and configurations saved on this phone.</p>
+              <button class="btn btn-danger btn-sm" id="btnResetAppData" style="margin-top: 6px;">
+                <i class="ri-delete-bin-6-line"></i> Delete All Data
+              </button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 11px; font-weight: 600;">
+              MachineMitra v1.0.0
+            </div>
+          </section>
+        </div>
+        
+        <!-- ---------------------------------------------------- -->
+        <!-- BOTTOM NAVIGATION BAR (Sticky bottom navigation) -->
+        <!-- ---------------------------------------------------- -->
+        <nav class="bottom-nav">
+          <button class="nav-item active" data-target="screenHome">
+            <i class="ri-home-5-line"></i>
+            Home
+          </button>
+          <button class="nav-item" data-target="screenWork">
+            <i class="ri-file-list-2-line"></i>
+            Work
+          </button>
+          <button class="nav-item" data-target="screenPayments">
+            <i class="ri-wallet-3-line"></i>
+            Payments
+          </button>
+          <button class="nav-item" data-target="screenMachines">
+            <i class="ri-truck-line"></i>
+            Machines
+          </button>
+          <button class="nav-item" data-target="screenProfile">
+            <i class="ri-user-line"></i>
+            Profile
+          </button>
+        </nav>
+        
+      </div> <!-- Close Device Shell -->
+    </div> <!-- Close App Container -->
+
+    <!-- ---------------------------------------------------- -->
+    <!-- BOTTOM SHEETS / SLIDE-UP DRAWERS (Forms)             -->
+    <!-- ---------------------------------------------------- -->
+    
+    <!-- Backdrop overlay -->
+    <div class="bottom-sheet-overlay" id="bottomSheetOverlay"></div>
+    
+    <!-- Sheet 1: ADD WORK ENTRY FORM -->
+    <div class="bottom-sheet" id="sheetAddWork">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Add Work Entry</h3>
+        <button class="sheet-close" id="btnCloseAddWork">&times;</button>
+      </div>
+      <div class="sheet-body">
+        <form id="formAddWork" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label">Select Machine</label>
+            <select id="workMachine" class="form-input form-select" required>
+              <option value="" disabled selected>Choose a machine...</option>
+              <!-- Dynamically filled -->
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Customer Name</label>
+            <input type="text" id="workCustomerName" class="form-input" placeholder="e.g. Rajesh Kumar" required />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <input type="text" id="workLocation" class="form-input" placeholder="e.g. bypass road construction" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Billing Type</label>
+            <select id="workBillingType" class="form-input form-select" required>
+              <option value="hourly" selected>Hourly Rate (Hours × Rate)</option>
+              <option value="load">Per Load (Loads × Rate)</option>
+              <option value="daily">Daily Rental (Days × Rate)</option>
+            </select>
+          </div>
+          
+          <!-- Side-by-side Quantity & Rate -->
+          <div style="display: flex; gap: 12px; width: 100%;">
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label" id="labelWorkQuantity">Hours Worked</label>
+              <input type="number" id="workQuantity" class="form-input" placeholder="0" min="0.1" step="0.1" required />
+              <div class="presets-grid" id="presetsWorkQuantity">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label" id="labelWorkRate">Rate Per Hour</label>
+              <input type="number" id="workRate" class="form-input" placeholder="₹" min="1" step="10" required />
+              <div class="presets-grid" id="presetsWorkRate">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Live Total Calculation Badge -->
+          <div class="total-calc-box">
+            <span class="total-calc-label">Total Amount</span>
+            <span class="total-calc-val" id="workTotalDisplay">₹0</span>
+          </div>
+          
+          <button class="btn btn-primary" id="btnSaveWork" style="margin-top: 12px;">
+            Save Work Entry <i class="ri-checkbox-circle-line"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Sheet 2: RECEIVE PAYMENT FORM -->
+    <div class="bottom-sheet" id="sheetAddPayment">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Record Payment</h3>
+        <button class="sheet-close" id="btnCloseAddPayment">&times;</button>
+      </div>
+      <div class="sheet-body">
+        <form id="formAddPayment" onsubmit="return false;">
+          <div class="form-group" id="paymentSelectorGroup">
+            <label class="form-label">Link to Pending Bill</label>
+            <select id="paymentLinkOption" class="form-input form-select">
+              <option value="custom" selected>Add Custom Payment...</option>
+              <!-- Pending work entries populated here -->
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Customer Name</label>
+            <input type="text" id="paymentCustomerName" class="form-input" placeholder="Customer Name" required />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Amount Received</label>
+            <input type="number" id="paymentAmount" class="form-input" placeholder="₹ Amount" min="1" required />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Payment Status</label>
+            <select id="paymentStatus" class="form-input form-select" required>
+              <option value="paid" selected>Paid (Received)</option>
+              <option value="pending">Pending (Dues)</option>
+            </select>
+          </div>
+          
+          <button class="btn btn-primary" id="btnSavePayment" style="margin-top: 12px; background-color: var(--success); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
+            Record Payment <i class="ri-checkbox-circle-line"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Sheet 3: ADD EXPENSE FORM -->
+    <div class="bottom-sheet" id="sheetAddExpense">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Add Expense</h3>
+        <button class="sheet-close" id="btnCloseAddExpense">&times;</button>
+      </div>
+      <div class="sheet-body">
+        <form id="formAddExpense" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="expenseCategory" class="form-input form-select" required>
+              <option value="" disabled selected>Choose category...</option>
+              <option value="fuel">Fuel Expenses</option>
+              <option value="maintenance">Maintenance & Repairs</option>
+              <option value="other">Other Expenses</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Machine (Optional)</label>
+            <select id="expenseMachine" class="form-input form-select">
+              <option value="">No machine...</option>
+              <!-- Dynamically filled -->
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Expense Amount</label>
+            <input type="number" id="expenseAmount" class="form-input" placeholder="₹ Amount" min="1" required />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Note / Remark</label>
+            <input type="text" id="expenseNote" class="form-input" placeholder="e.g. Diesel 40 Liters, tyre repair" required />
+          </div>
+          
+          <button class="btn btn-primary" id="btnSaveExpense" style="margin-top: 12px; background-color: var(--danger); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">
+            Save Expense <i class="ri-checkbox-circle-line"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Sheet 4: ADD MACHINE FORM -->
+    <div class="bottom-sheet" id="sheetAddMachine">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Add Machine</h3>
+        <button class="sheet-close" id="btnCloseAddMachine">&times;</button>
+      </div>
+      <div class="sheet-body">
+        <form id="formAddMachine" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label">Machine Name / Model</label>
+            <select id="machinePreset" class="form-input form-select" required>
+              <option value="" disabled selected>Select preset...</option>
+              <option value="JCB 3DX">JCB 3DX</option>
+              <option value="Excavator JS205">JCB Excavator JS205</option>
+              <option value="Tata Tipper">Tata Tipper</option>
+              <option value="Custom">Other / Custom Equipment...</option>
+            </select>
+          </div>
+          
+          <div class="form-group" id="customMachineGroup" style="display: none;">
+            <label class="form-label">Custom Equipment Name</label>
+            <input type="text" id="customMachineName" class="form-input" placeholder="e.g. Hydraulic Crane" />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Registration Number</label>
+            <input type="text" id="machineRegNo" class="form-input" placeholder="e.g. KA-20-AB-1234" required />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Current Status</label>
+            <select id="machineStatus" class="form-input form-select" required>
+              <option value="active" selected>Active (Working)</option>
+              <option value="idle">Idle (Available)</option>
+              <option value="maintenance">Under Maintenance</option>
+            </select>
+          </div>
+          
+          <button class="btn btn-primary" id="btnSaveMachine" style="margin-top: 12px; background-color: var(--secondary); box-shadow: 0 4px 12px rgba(11, 19, 43, 0.2);">
+            Register Machine <i class="ri-checkbox-circle-line"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Sheet 5: EDIT MACHINE FORM -->
+    <div class="bottom-sheet" id="sheetEditMachine">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Edit Machine Details</h3>
+        <button class="sheet-close" id="btnCloseEditMachine">&times;</button>
+      </div>
+      <div class="sheet-body">
+        <form id="formEditMachine" onsubmit="return false;">
+          <input type="hidden" id="editMachineId" />
+          
+          <div class="form-group">
+            <label class="form-label">Machine Name / Model</label>
+            <input type="text" id="editMachineName" class="form-input" placeholder="e.g. JCB 3DX" required />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Registration Number</label>
+            <input type="text" id="editMachineRegNo" class="form-input" placeholder="e.g. KA-20-AB-1234" required />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Current Status</label>
+            <select id="editMachineStatus" class="form-input form-select" required>
+              <option value="active">Active (Working)</option>
+              <option value="idle">Idle (Available)</option>
+              <option value="maintenance">Under Maintenance</option>
+            </select>
+          </div>
+          
+          <button class="btn btn-primary" id="btnSaveEditMachine" style="margin-top: 12px; background-color: var(--secondary);">
+            Save Changes <i class="ri-checkbox-circle-line"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Sheet 6: INVOICE PREVIEW / PRINT -->
+    <div class="bottom-sheet" id="invoiceModal" style="z-index: 1300;">
+      <div class="sheet-handle no-print"></div>
+      <div class="sheet-header no-print">
+        <h3>Invoice Details</h3>
+        <button class="sheet-close" id="btnCloseInvoice">&times;</button>
+      </div>
+      <div class="sheet-body">
+        <div id="invoicePrintArea" class="invoice-container">
+          <!-- Populated dynamically -->
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;" class="no-print">
+          <button class="btn btn-primary" id="btnDownloadPDF" style="flex: 1; min-width: 140px; background-color: var(--primary);">
+            <i class="ri-file-pdf-line"></i> Download PDF
+          </button>
+          <button class="btn btn-outline" id="btnPrintInvoice" style="flex: 1; min-width: 120px;">
+            <i class="ri-printer-line"></i> Print Bill
+          </button>
+          <button class="btn btn-outline" id="btnDismissInvoice" style="flex: 0.5; min-width: 80px;">Close</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- PDF Generator Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Scripts Bundled via Vite -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
